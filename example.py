@@ -7,10 +7,7 @@ pipeline = KPipeline(lang_code='a')
 
 text = "The sky above the port was the color of television, tuned to a dead channel."
 
-generator = pipeline(
-    text, voice='af_bella',
-    speed=1, split_pattern=r'\n+'
-)
+generator = pipeline(text, voice='af_bella', speed=1, split_pattern=r'\n+')
 
 if not os.path.exists('tmp'):
     os.makedirs('tmp', exist_ok=True)    
