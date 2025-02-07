@@ -1,5 +1,5 @@
 # offline proofreading
-Implementation of CLI tool to easily provide text-to-speech on raw text or documents. [Uses hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) under the hood.
+Implementation of CLI tool to easily provide text-to-speech on raw text or documents. Uses [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) under the hood.
 
 ## Requirements
 #### Install kokoro TTS model
