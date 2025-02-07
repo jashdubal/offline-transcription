@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import sys
@@ -6,7 +7,6 @@ from datetime import datetime
 import soundfile as sf
 from kokoro import KPipeline
 
-# Initialize a pipeline globally to avoid reloading
 pipeline = KPipeline(lang_code='a')
 
 def generate_audio(text, voice, speed):
@@ -33,8 +33,6 @@ def merge_audio_files(audio_files):
     for file in audio_files:
         audio_data, samplerate = sf.read(file)
         merged_audio.extend(audio_data)
-
-    # Save the merged audio file
     sf.write(merged_output_path, merged_audio, 24000)
     return merged_output_path
 
@@ -66,6 +64,7 @@ def process_input(args):
     print("Process completed successfully.")
 
 def main():
+    import warnings    
     parser = argparse.ArgumentParser(description="CLI tool for offline text-to-speech proofreading.")
 
     parser.add_argument('text', nargs='?', help="Raw text to synthesize.")
@@ -82,7 +81,8 @@ def main():
         sys.exit(1)
 
     # Process the input and generate audio
-    process_input(args)
+    with warnings.catch_warnings(action="ignore"):
+        process_input(args)
 
 if __name__ == '__main__':
     main()
