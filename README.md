@@ -3,10 +3,14 @@ Implementation of CLI tool to easily provide text-to-speech on raw text or docum
 
 ## Requirements
 #### Install kokoro TTS model
-`pip install -q kokoro>=0.3.4 soundfile`
+```
+pip install -q kokoro>=0.3.4 soundfile
+```
 
 #### Install espeak, used for English OOD fallback and some non-English languages (Linux/Windows)
-`apt-get -qq -y install espeak-ng > /dev/null 2>&1`
+```
+apt-get -qq -y install espeak-ng > /dev/null 2>&1
+```
 
 ## Usage
 Raw text:
