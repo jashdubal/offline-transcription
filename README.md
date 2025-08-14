@@ -82,7 +82,7 @@ apt-get -qq -y install espeak-ng > /dev/null 2>&1
 
 ## Usage
 
-The tool provides beautiful visual feedback with emojis and progress indicators to make the experience more engaging. Use `--silent` for completely quiet operation.
+Use `--silent` for completely quiet operation.
 
 ### Using the executable script (recommended):
 ```bash
