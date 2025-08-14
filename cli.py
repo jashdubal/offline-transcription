@@ -9,8 +9,10 @@ import shutil
 from datetime import datetime
 import soundfile as sf
 from kokoro import KPipeline
+from play import play_audio_file
 
 pipeline = KPipeline(lang_code='a')
+
 
 def generate_audio(text, voice, speed, output_format='mp3'):
     """Generates audio files from the provided text."""
@@ -84,6 +86,11 @@ def process_input(args):
 
     print(f"Audio output saved to {merged_file}")
 
+    # Play the audio file if requested
+    if args.play:
+        print("Playing generated audio...")
+        play_audio_file(merged_file)
+
     print("Cleaning up temporary files...")
     clean_up(audio_files)
     print("Process completed successfully.")
@@ -100,6 +107,7 @@ def main():
     parser.add_argument('--format', choices=['mp3', 'wav'], default='mp3', help="Output audio format (default: mp3).")
     parser.add_argument('-o', '--output', default='outputs', help="Output directory for generated audio files (default: outputs).")
     parser.add_argument('--filename', help="Custom filename for the output audio file (without extension).")
+    parser.add_argument('--play', action='store_true', help="Automatically play the generated audio file after creation.")
 
     args = parser.parse_args()
 
