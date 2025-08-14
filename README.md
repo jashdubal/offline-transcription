@@ -1,8 +1,6 @@
 # Offline TTS
 CLI tool to generate text-to-speech for raw text or documents. Uses [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) under the hood.
 
-**🚀 Quick Start (macOS):** `bin/setup-macos` - One command setup for everything!
-
 - [Offline TTS](#offline-tts)
   - [Quick Setup (macOS)](#quick-setup-macos)
   - [Manual Installation](#manual-installation)
