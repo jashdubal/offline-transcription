@@ -13,6 +13,28 @@ from play import play_audio_file
 
 pipeline = KPipeline(lang_code='a')
 
+# Global variable for silent mode
+SILENT_MODE = False
+
+def log_info(message, emoji="ℹ️"):
+    """Log informational messages with emoji, respecting silent mode."""
+    if not SILENT_MODE:
+        print(f"{emoji} {message}")
+
+def log_success(message, emoji="✅"):
+    """Log success messages with emoji, respecting silent mode."""
+    if not SILENT_MODE:
+        print(f"{emoji} {message}")
+
+def log_error(message, emoji="❌"):
+    """Log error messages with emoji (always shown)."""
+    print(f"{emoji} {message}")
+
+def log_progress(message, emoji="⏳"):
+    """Log progress messages with emoji, respecting silent mode."""
+    if not SILENT_MODE:
+        print(f"{emoji} {message}")
+
 
 def generate_audio(text, voice, speed, output_format='mp3'):
     """Generates audio files from the provided text."""
@@ -46,8 +68,8 @@ def merge_audio_files(audio_files, output_dir='outputs', output_format='mp3', cu
     
     # Check if file already exists
     if os.path.exists(merged_output_path):
-        print(f"Error: File '{merged_output_path}' already exists.")
-        print("Please choose a different filename or remove the existing file.")
+        log_error(f"File '{merged_output_path}' already exists.")
+        log_error("Please choose a different filename or remove the existing file.")
         sys.exit(1)
     
     merged_audio = []
@@ -82,43 +104,44 @@ def process_input(args):
     # Set MPS environment variable if requested
     if args.mps:
         os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
-        print("GPU acceleration (MPS) enabled.")
+        log_info("GPU acceleration (MPS) enabled", "🚀")
     
     if args.source:
         with open(args.source, 'r') as file:
             text = file.read()
+        log_info(f"Loaded text from: {args.source}", "📄")
     else:
         text = args.text
 
-    print("Generating audio...")
+    log_progress("Generating audio segments...", "🎵")
     audio_files = generate_audio(text, args.voice, args.speed, args.format)
 
     if args.play_only:
         # Play-only mode: merge to temporary file, play, then clean up everything
-        print("Merging audio for preview...")
+        log_progress("Merging audio for preview...", "🔄")
         merged_file = merge_audio_files_temp(audio_files, args.format)
         
-        print("Playing audio preview...")
-        play_audio_file(merged_file)
+        log_progress("Playing audio preview...", "🔊")
+        play_audio_file(merged_file, args.silent)
         
-        print("Cleaning up temporary files...")
+        log_progress("Cleaning up temporary files...", "🧹")
         clean_up(audio_files + [merged_file])  # Clean up segments + merged preview
-        print("Preview completed successfully.")
+        log_success("Preview completed successfully!", "🎉")
     else:
         # Normal mode: save to output directory
-        print("Merging audio files...")
+        log_progress("Merging audio files...", "🔄")
         merged_file = merge_audio_files(audio_files, args.output, args.format, args.filename)
 
-        print(f"Audio output saved to {merged_file}")
+        log_success(f"Audio saved: {os.path.basename(merged_file)}", "💾")
 
         # Play the audio file if requested
         if args.play:
-            print("Playing generated audio...")
-            play_audio_file(merged_file)
+            log_progress("Playing generated audio...", "🔊")
+            play_audio_file(merged_file, args.silent)
 
-        print("Cleaning up temporary files...")
+        log_progress("Cleaning up temporary files...", "🧹")
         clean_up(audio_files)
-        print("Process completed successfully.")
+        log_success("Process completed successfully!", "🎉")
 
 def main():
     import warnings    
@@ -134,13 +157,19 @@ def main():
     parser.add_argument('--filename', help="Custom filename for the output audio file (without extension).")
     parser.add_argument('--play', action='store_true', help="Automatically play the generated audio file after creation.")
     parser.add_argument('--play-only', action='store_true', help="Generate and play audio without saving to output directory (temporary preview).")
+    parser.add_argument('--silent', action='store_true', help="Silent mode - suppress all output except errors.")
 
     args = parser.parse_args()
 
+    # Set silent mode globally
+    global SILENT_MODE
+    SILENT_MODE = args.silent
+    
     # Ensure at least one input is provided
     if not args.text and not args.source:
-        print("Error: Please provide either raw text or a source file path.")
-        parser.print_help()
+        log_error("Please provide either raw text or a source file path.")
+        if not args.silent:
+            parser.print_help()
         sys.exit(1)
 
     # Process the input and generate audio

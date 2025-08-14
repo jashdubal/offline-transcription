@@ -8,22 +8,23 @@ import platform
 from pathlib import Path
 
 
-def play_audio_file(file_path, verbose=False):
+def play_audio_file(file_path, silent=False, verbose=False):
     """Plays an audio file using the system's default audio player."""
     if not os.path.exists(file_path):
-        print(f"Error: File '{file_path}' not found.")
+        if not silent:
+            print(f"❌ Error: File '{file_path}' not found.")
         return False
     
     try:
         system = platform.system().lower()
         
-        if verbose:
-            print(f"Detected system: {system}")
-            print(f"Playing: {file_path}")
+        if verbose and not silent:
+            print(f"🖥️  Detected system: {system}")
+            print(f"🎵 Playing: {file_path}")
         
         if system == 'darwin':  # macOS
-            if verbose:
-                print("Using afplay (macOS built-in player)")
+            if verbose and not silent:
+                print("🍎 Using afplay (macOS built-in player)")
             subprocess.run(['afplay', file_path], check=True)
             
         elif system == 'linux':
@@ -33,8 +34,8 @@ def play_audio_file(file_path, verbose=False):
             
             for player in players:
                 if shutil.which(player):
-                    if verbose:
-                        print(f"Using {player}")
+                    if verbose and not silent:
+                        print(f"🎧 Using {player}")
                     
                     if player == 'vlc':
                         subprocess.run([player, '--intf', 'dummy', '--play-and-exit', file_path], 
@@ -45,29 +46,33 @@ def play_audio_file(file_path, verbose=False):
                     break
             
             if not player_found:
-                print("Error: No suitable audio player found.")
-                print("Please install one of: paplay, aplay, play, mpv, or vlc")
+                if not silent:
+                    print("❌ Error: No suitable audio player found.")
+                    print("💡 Please install one of: paplay, aplay, play, mpv, or vlc")
                 return False
                 
         elif system == 'windows':
             # Windows - use start command
-            if verbose:
-                print("Using Windows start command")
+            if verbose and not silent:
+                print("🪟 Using Windows start command")
             subprocess.run(['start', '', file_path], shell=True, check=True)
             
         else:
-            print(f"Error: Audio playback not supported on {system}")
+            if not silent:
+                print(f"❌ Error: Audio playback not supported on {system}")
             return False
             
-        if not verbose:
-            print(f"Playing: {os.path.basename(file_path)}")
+        if not verbose and not silent:
+            print(f"🎵 Playing: {os.path.basename(file_path)}")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"Error playing audio file: {e}")
+        if not silent:
+            print(f"❌ Error playing audio file: {e}")
         return False
     except FileNotFoundError as e:
-        print(f"Error: Audio player not found - {e}")
+        if not silent:
+            print(f"❌ Error: Audio player not found - {e}")
         return False
 
 

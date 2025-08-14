@@ -55,6 +55,8 @@ apt-get -qq -y install espeak-ng > /dev/null 2>&1
 
 ## Usage
 
+The tool provides beautiful visual feedback with emojis and progress indicators to make the experience more engaging. Use `--silent` for completely quiet operation.
+
 ### Using the executable script (recommended):
 ```bash
 # Raw text with default settings
@@ -75,6 +77,9 @@ bin/tts "hello world" --play
 # Preview audio without saving (temporary playback only)
 bin/tts "hello world" --play-only
 
+# Silent mode - no output except errors
+bin/tts "hello world" --silent
+
 # Generate audio and play later with standalone player
 bin/tts "hello world" --filename "my_audio"
 bin/play --latest
@@ -90,6 +95,7 @@ bin/tts "hello world" -s 0.8 -v af_heart --mps --format mp3 -o outputs --filenam
 - `--filename`: Custom filename for output (without extension). Will not overwrite existing files.
 - `--play`: Automatically play the generated audio file after creation (supports macOS, Linux, Windows)
 - `--play-only`: Generate and play audio without saving to output directory (temporary preview only)
+- `--silent`: Silent mode - suppress all output except errors (perfect for scripts)
 - `-s, --speed`: Speech speed (default: 1.0)
 - `-v, --voice`: Voice to use (default: af_heart)
 - `-f, --source`: Path to source document file instead of raw text
