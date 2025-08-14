@@ -1,0 +1,204 @@
+#!/bin/bash
+
+# TTS Setup Script for macOS
+# This script installs and sets up everything needed to run the TTS tool from a fresh macOS installation
+
+set -e  # Exit on any error
+
+# Colors for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Emoji for better visual feedback
+SUCCESS="✅"
+ERROR="❌"
+INFO="ℹ️"
+INSTALL="📦"
+SETUP="⚙️"
+ROCKET="🚀"
+
+echo -e "${BLUE}${ROCKET} TTS Setup Script for macOS${NC}"
+echo -e "${CYAN}This script will install and configure everything needed for the TTS tool${NC}"
+echo ""
+
+# Function to print colored messages
+print_status() {
+    echo -e "${GREEN}${SUCCESS} $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}${INFO} $1${NC}"
+}
+
+print_install() {
+    echo -e "${YELLOW}${INSTALL} $1${NC}"
+}
+
+print_setup() {
+    echo -e "${PURPLE}${SETUP} $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}${ERROR} $1${NC}"
+}
+
+# Check if running on macOS
+if [[ "$OSTYPE" != "darwin"* ]]; then
+    print_error "This script is designed for macOS only!"
+    exit 1
+fi
+
+print_info "Detected macOS system"
+
+# Check for Xcode Command Line Tools
+print_info "Checking for Xcode Command Line Tools..."
+if ! xcode-select -p &> /dev/null; then
+    print_install "Installing Xcode Command Line Tools..."
+    xcode-select --install
+    print_info "Please complete the Xcode Command Line Tools installation and run this script again"
+    exit 1
+else
+    print_status "Xcode Command Line Tools already installed"
+fi
+
+# Check for Homebrew
+print_info "Checking for Homebrew..."
+if ! command -v brew &> /dev/null; then
+    print_install "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    # Add Homebrew to PATH for current session
+    if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -f "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+    
+    print_status "Homebrew installed successfully"
+else
+    print_status "Homebrew already installed"
+fi
+
+# Update Homebrew
+print_info "Updating Homebrew..."
+brew update
+
+# Install Python 3 if not present
+print_info "Checking for Python 3..."
+if ! command -v python3 &> /dev/null; then
+    print_install "Installing Python 3..."
+    brew install python@3.11
+    print_status "Python 3 installed successfully"
+else
+    print_status "Python 3 already installed ($(python3 --version))"
+fi
+
+# Install espeak-ng for TTS fallback
+print_info "Checking for espeak-ng..."
+if ! command -v espeak-ng &> /dev/null; then
+    print_install "Installing espeak-ng..."
+    brew install espeak-ng
+    print_status "espeak-ng installed successfully"
+else
+    print_status "espeak-ng already installed"
+fi
+
+# Install UV package manager
+print_info "Checking for UV..."
+if ! command -v uv &> /dev/null; then
+    print_install "Installing UV (fast Python package manager)..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    # Add UV to PATH for current session
+    export PATH="$HOME/.local/bin:$PATH"
+    
+    print_status "UV installed successfully"
+else
+    print_status "UV already installed ($(uv --version))"
+fi
+
+# Get the project directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+print_info "Setting up project in: $PROJECT_DIR"
+cd "$PROJECT_DIR"
+
+# Initialize UV project
+print_setup "Initializing UV project..."
+if [[ ! -f "uv.lock" ]]; then
+    uv sync
+else
+    print_info "UV project already initialized"
+fi
+
+# Install Python dependencies
+print_setup "Installing Python dependencies..."
+uv add kokoro soundfile
+
+print_status "Dependencies installed successfully"
+
+# Make scripts executable
+print_setup "Making scripts executable..."
+chmod +x bin/tts
+chmod +x bin/play
+chmod +x bin/setup-macos
+
+print_status "Scripts are now executable"
+
+# Download the Kokoro model (this will happen on first run, but we can trigger it)
+print_setup "Preparing TTS model (this may take a few minutes on first run)..."
+print_info "Testing TTS setup with a quick example..."
+
+# Run a quick test to download the model
+uv run cli.py "Testing TTS installation" --silent --play-only || {
+    print_error "TTS test failed. Please check the installation."
+    exit 1
+}
+
+print_status "TTS model downloaded and ready"
+
+# Add to shell profile for persistent PATH
+print_setup "Setting up shell environment..."
+
+SHELL_PROFILE=""
+if [[ $SHELL == */zsh ]]; then
+    SHELL_PROFILE="$HOME/.zshrc"
+elif [[ $SHELL == */bash ]]; then
+    SHELL_PROFILE="$HOME/.bash_profile"
+fi
+
+if [[ -n "$SHELL_PROFILE" ]]; then
+    # Add UV to PATH
+    if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$SHELL_PROFILE" 2>/dev/null; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_PROFILE"
+        print_status "Added UV to PATH in $SHELL_PROFILE"
+    fi
+    
+    # Add Homebrew to PATH (for Apple Silicon Macs)
+    if [[ -f "/opt/homebrew/bin/brew" ]] && ! grep -q '/opt/homebrew/bin/brew' "$SHELL_PROFILE" 2>/dev/null; then
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$SHELL_PROFILE"
+        print_status "Added Homebrew to PATH in $SHELL_PROFILE"
+    fi
+fi
+
+echo ""
+echo -e "${GREEN}${ROCKET} Setup completed successfully!${NC}"
+echo ""
+echo -e "${CYAN}You can now use the TTS tool with:${NC}"
+echo -e "${YELLOW}  bin/tts \"Hello world\"${NC}"
+echo -e "${YELLOW}  bin/play --latest${NC}"
+echo ""
+echo -e "${CYAN}Available options:${NC}"
+echo -e "${YELLOW}  bin/tts --help${NC}"
+echo -e "${YELLOW}  bin/play --help${NC}"
+echo ""
+echo -e "${BLUE}${INFO} If you opened a new terminal, you may need to restart it or run:${NC}"
+echo -e "${YELLOW}  source $SHELL_PROFILE${NC}"
+echo ""
+echo -e "${GREEN}Happy text-to-speech generation! 🎵${NC}"

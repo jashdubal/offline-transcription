@@ -1,8 +1,12 @@
 # Offline TTS
 CLI tool to generate text-to-speech for raw text or documents. Uses [hexgrad/Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) under the hood.
 
+**🚀 Quick Start (macOS):** `bin/setup-macos` - One command setup for everything!
+
 - [Offline TTS](#offline-tts)
-  - [Requirements](#requirements)
+  - [Quick Setup (macOS)](#quick-setup-macos)
+  - [Manual Installation](#manual-installation)
+    - [Requirements](#requirements)
     - [Using UV](#using-uv)
     - [Install kokoro TTS model](#install-kokoro-tts-model)
       - [Using pip](#using-pip)
@@ -18,7 +22,30 @@ CLI tool to generate text-to-speech for raw text or documents. Uses [hexgrad/Kok
     - [Voices](#voices)
 
 
-## Requirements
+## Quick Setup (macOS)
+
+For a completely automated setup on macOS, just run:
+
+```bash
+bin/setup-macos
+```
+
+This script will automatically install and configure:
+- ✅ Xcode Command Line Tools (if needed)
+- ✅ Homebrew (if needed)
+- ✅ Python 3
+- ✅ UV package manager
+- ✅ espeak-ng for TTS fallback
+- ✅ Kokoro TTS model and dependencies
+- ✅ Virtual environment setup
+
+After running the setup script, you're ready to use the TTS tool immediately!
+
+## Manual Installation
+
+If you prefer manual installation or are on a different platform:
+
+### Requirements
 
 > Having python3 installed.
 
