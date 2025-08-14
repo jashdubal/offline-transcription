@@ -58,6 +58,18 @@ def merge_audio_files(audio_files, output_dir='outputs', output_format='mp3', cu
     sf.write(merged_output_path, merged_audio, 24000)
     return merged_output_path
 
+def merge_audio_files_temp(audio_files, output_format='mp3'):
+    """Merges multiple audio files into a single temporary file for preview."""
+    # Create temporary merged file
+    temp_filename = f'tmp/preview.{output_format}'
+    merged_audio = []
+
+    for file in audio_files:
+        audio_data, samplerate = sf.read(file)
+        merged_audio.extend(audio_data)
+    sf.write(temp_filename, merged_audio, 24000)
+    return temp_filename
+
 def clean_up(files):
     """Deletes temporary audio files."""
     for file in files:
@@ -81,19 +93,32 @@ def process_input(args):
     print("Generating audio...")
     audio_files = generate_audio(text, args.voice, args.speed, args.format)
 
-    print("Merging audio files...")
-    merged_file = merge_audio_files(audio_files, args.output, args.format, args.filename)
-
-    print(f"Audio output saved to {merged_file}")
-
-    # Play the audio file if requested
-    if args.play:
-        print("Playing generated audio...")
+    if args.play_only:
+        # Play-only mode: merge to temporary file, play, then clean up everything
+        print("Merging audio for preview...")
+        merged_file = merge_audio_files_temp(audio_files, args.format)
+        
+        print("Playing audio preview...")
         play_audio_file(merged_file)
+        
+        print("Cleaning up temporary files...")
+        clean_up(audio_files + [merged_file])  # Clean up segments + merged preview
+        print("Preview completed successfully.")
+    else:
+        # Normal mode: save to output directory
+        print("Merging audio files...")
+        merged_file = merge_audio_files(audio_files, args.output, args.format, args.filename)
 
-    print("Cleaning up temporary files...")
-    clean_up(audio_files)
-    print("Process completed successfully.")
+        print(f"Audio output saved to {merged_file}")
+
+        # Play the audio file if requested
+        if args.play:
+            print("Playing generated audio...")
+            play_audio_file(merged_file)
+
+        print("Cleaning up temporary files...")
+        clean_up(audio_files)
+        print("Process completed successfully.")
 
 def main():
     import warnings    
@@ -108,6 +133,7 @@ def main():
     parser.add_argument('-o', '--output', default='outputs', help="Output directory for generated audio files (default: outputs).")
     parser.add_argument('--filename', help="Custom filename for the output audio file (without extension).")
     parser.add_argument('--play', action='store_true', help="Automatically play the generated audio file after creation.")
+    parser.add_argument('--play-only', action='store_true', help="Generate and play audio without saving to output directory (temporary preview).")
 
     args = parser.parse_args()
 
