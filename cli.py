@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import warnings
+warnings.filterwarnings("ignore")
+
 import argparse
 import os
 import sys
@@ -19,15 +22,15 @@ def generate_audio(text, voice, speed):
 
     audio_files = []
     for i, (_, _, audio) in enumerate(generator):
-        file_path = f'{output_dir}/{i}.wav'
-        sf.write(file_path, audio, 24000)  # Save each segment to a .wav file
+        file_path = f'{output_dir}/{i}.mp3'
+        sf.write(file_path, audio, 24000)  # Save each segment to a .mp3 file
         audio_files.append(file_path)
     
     return audio_files
 
 def merge_audio_files(audio_files):
     """Merges multiple audio files into a single file."""
-    merged_output_path = datetime.now().strftime('%y-%m-%d-%H-%M-%S.wav')
+    merged_output_path = datetime.now().strftime('%y-%m-%d-%H-%M-%S.mp3')
     merged_audio = []
 
     for file in audio_files:
@@ -65,7 +68,7 @@ def process_input(args):
 
 def main():
     import warnings    
-    parser = argparse.ArgumentParser(description="CLI tool for offline text-to-speech proofreading.")
+    parser = argparse.ArgumentParser(description="CLI tool for offline text-to-speech")
 
     parser.add_argument('text', nargs='?', help="Raw text to synthesize.")
     parser.add_argument('-f', '--file', help="Path to a document file (e.g., README.md).")
@@ -81,7 +84,7 @@ def main():
         sys.exit(1)
 
     # Process the input and generate audio
-    with warnings.catch_warnings(action="ignore"):
+    with warnings.catch_warnings():
         process_input(args)
 
 if __name__ == '__main__':
