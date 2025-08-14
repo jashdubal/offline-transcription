@@ -38,22 +38,42 @@ apt-get -qq -y install espeak-ng > /dev/null 2>&1
 
 ## Usage
 
-> On Mac OS use the PYTORCH_ENABLE_MPS_FALLBACK=1 flag to use GPU acceleration
+### Using the executable script (recommended):
+```bash
+# Raw text with default settings
+bin/tts "living the dream"
 
-### Raw text:
-```
-# With python3
-PYTORCH_ENABLE_MPS_FALLBACK=1 python3 cli.py "living the dream" -s 1 -v af_bella
-# With UV
-PYTORCH_ENABLE_MPS_FALLBACK=1 uv run cli.py "living the dream" -s 1 -v af_bella
+# Raw text with custom voice and speed
+bin/tts "living the dream" -s 1.2 -v af_bella
+
+# Document with GPU acceleration and custom output format
+bin/tts -f README.md --mps --format wav -o my_audio
+
+# Custom filename (will not overwrite existing files)
+bin/tts "hello world" --filename "my_greeting"
+
+# All options example
+bin/tts "hello world" -s 0.8 -v af_heart --mps --format mp3 -o outputs --filename "custom_audio"
 ```
 
-### Document:
-```
+### Command line options:
+- `--mps`: Enable Mac OS MPS GPU acceleration (replaces manual PYTORCH_ENABLE_MPS_FALLBACK=1)
+- `--format`: Output format - mp3 (default) or wav
+- `-o, --output`: Output directory (default: outputs)
+- `--filename`: Custom filename for output (without extension). Will not overwrite existing files.
+- `-s, --speed`: Speech speed (default: 1.0)
+- `-v, --voice`: Voice to use (default: af_heart)
+- `-f, --source`: Path to source document file instead of raw text
+
+### Traditional usage (if not using the executable script):
+
+```bash
 # With python3
-PYTORCH_ENABLE_MPS_FALLBACK=1 python3 cli.py -f README.md -s 1 -v af_bella
+python3 cli.py "living the dream" -s 1 -v af_bella --mps
 # With UV
-PYTORCH_ENABLE_MPS_FALLBACK=1 uv run cli.py -f README.md -s 1 -v af_bella
+uv run cli.py "living the dream" -s 1 -v af_bella --mps
+# Source file example
+uv run cli.py -f README.md --mps --format wav --filename "readme_audio"
 ```
 
 On first run you will have to download the weights which will take some time:

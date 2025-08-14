@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# TTS - Executable script for text-to-speech generation
+# This script runs the TTS CLI without needing 'uv run'
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the parent directory (project root)
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_DIR"
+
+# Check if uv is available, otherwise fall back to python
+if command -v uv >/dev/null 2>&1; then
+    # Use uv to run the script
+    uv run cli.py "$@"
+elif command -v python3 >/dev/null 2>&1; then
+    # Fall back to python3
+    python3 cli.py "$@"
+else
+    echo "Error: Neither 'uv' nor 'python3' is available in your PATH."
+    echo "Please install one of them to use this script."
+    exit 1
+fi
