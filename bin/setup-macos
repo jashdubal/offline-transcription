@@ -134,7 +134,8 @@ print_setup "Initializing UV project..."
 if [[ ! -f "uv.lock" ]]; then
     uv sync
 else
-    print_info "UV project already initialized"
+    print_info "UV project already initialized, ensuring dependencies are up to date..."
+    uv sync
 fi
 
 # Install Python dependencies
@@ -142,6 +143,44 @@ print_setup "Installing Python dependencies..."
 uv add kokoro soundfile
 
 print_status "Dependencies installed successfully"
+
+# Ensure UV environment is properly activated
+print_setup "Verifying UV environment..."
+if ! uv run python --version >/dev/null 2>&1; then
+    print_error "UV environment is not working properly. Trying to fix..."
+    
+    # Try to recreate the virtual environment
+    print_info "Recreating UV virtual environment..."
+    if [[ -d ".venv" ]]; then
+        rm -rf .venv
+    fi
+    
+    uv sync --reinstall
+    
+    # Verify it works now
+    if ! uv run python --version >/dev/null 2>&1; then
+        print_error "Failed to create working UV environment."
+        print_info "You may need to install UV manually or use a different Python setup."
+        print_info "Try: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        exit 1
+    fi
+fi
+
+# Ensure pip is properly installed in the virtual environment
+print_setup "Ensuring pip is available in virtual environment..."
+if ! uv run python -m pip --version >/dev/null 2>&1; then
+    print_info "Installing pip in virtual environment..."
+    uv run python -m ensurepip --default-pip
+    
+    # Verify pip is now working
+    if ! uv run python -m pip --version >/dev/null 2>&1; then
+        print_error "Failed to install pip in virtual environment."
+        print_info "This may be a Python installation issue."
+        exit 1
+    fi
+fi
+
+print_status "UV environment and pip verified"
 
 # Make scripts executable
 print_setup "Making scripts executable..."
@@ -156,7 +195,7 @@ print_setup "Preparing TTS model (this may take a few minutes on first run)..."
 print_info "Testing TTS setup with a quick example..."
 
 # Run a quick test to download the model
-uv run cli.py "Testing TTS installation" --silent --play-only || {
+uv run cli.py "Testing TTS installation" --silent --play-only --mps || {
     print_error "TTS test failed. Please check the installation."
     exit 1
 }
