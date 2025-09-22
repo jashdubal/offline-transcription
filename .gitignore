@@ -1,3 +1,6 @@
 .DS_Store
 tmp/*
-outputs/*
+outputs/*# pixi environments
+.pixi/*
+!.pixi/config.toml
+__pycache__/
