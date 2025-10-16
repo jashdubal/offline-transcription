@@ -1,0 +1,15 @@
+[workspace]
+channels = ["conda-forge"]
+name = "offline-transcription"
+platforms = ["linux-64", "win-64", "osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "3.12.*"
+pip = ">=25.2,<26"
+
+[pypi-dependencies]
+kokoro = ">=0.9.4, <0.10"
+soundfile = ">=0.13.1, <0.14"

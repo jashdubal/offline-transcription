@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Play - Audio file player for TTS and other audio files
+# This script runs the audio player without needing 'uv run'
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the parent directory (project root)
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_DIR"
+
+# Check if uv is available, otherwise fall back to python
+if command -v uv >/dev/null 2>&1; then
+    # Use uv to run the script
+    uv run play.py "$@"
+elif command -v python3 >/dev/null 2>&1; then
+    # Fall back to python3
+    python3 play.py "$@"
+else
+    echo "Error: Neither 'uv' nor 'python3' is available in your PATH."
+    echo "Please install one of them to use this script."
+    exit 1
+fi
